@@ -1,7 +1,7 @@
 {
   "version": 3,
   "name": "Store Manager API Gateway",
-  "timeout": "5s",
+  "timeout": "15s",
   "cache_ttl": "300s",
   "output_encoding": "json",
   "port": 8080,
@@ -13,7 +13,7 @@
         {
           "url_pattern": "/payments",
           "host": ["http://payments_api:5009"],
-          "timeout": "5s"
+          "timeout": "15s"
         }
       ]
     },
@@ -24,7 +24,7 @@
         {
           "url_pattern": "/payments/process/{payment_id}",
           "host": ["http://payments_api:5009"],
-          "timeout": "5s"
+          "timeout": "15s"
         }
       ]
     },
@@ -39,7 +39,7 @@
       ],
       "extra_config": {
         "qos/ratelimit/router": {
-          "max_rate": 200,
+          "max_rate": 2000,
           "every": "1m"
         }
       }
@@ -61,7 +61,27 @@
         {
           "url_pattern": "/test/slow/{delay}",
           "host": ["http://store_manager:5000"],
-          "timeout": "5s"
+          "timeout": "15s"
+        }
+      ]
+    },
+    {
+      "endpoint": "/store-manager-api/orders",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/orders",
+          "host": ["http://store_manager:5000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/store-manager-api/orders/{id}",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/orders/{id}",
+          "host": ["http://store_manager:5000"]
         }
       ]
     }
