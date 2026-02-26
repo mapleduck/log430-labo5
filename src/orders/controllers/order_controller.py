@@ -41,7 +41,7 @@ def update_order(request):
         r.hset(f"order:{order_id}", mapping=order)
 
         # response
-        logger.debug("Statut actuel", status)
+        logger.debug(f"Statut actuel {status}")
         return jsonify({'updated': status}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
