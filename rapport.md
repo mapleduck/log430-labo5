@@ -3,13 +3,16 @@
 
 Étudiant: Yanni Haddar
 Nom github: mapleduck
-repo github: github.com/mapleduck/log430-labo4
+repo github: https://github.com/mapleduck/log430-labo5 et https://github.com/mapleduck/log430-labo5-payment
 
 ## Questions
 
-Note préalabe: des problèmes avec le VPN Cisco sur ma machine Ubuntu m'ont requis de faire ce lab sans accès à ma VM, donc store_manager et les autres containers furent uniquement roulé localement.
+Note préalabe: Je n'ai malheureusement pas pu accéder à ma VM, les tests de charges ont donc été roulés localement sur ma machine, avec les specs suivantes:
+- Ubuntu Desktop 22.04
+- 13th Gen Intel Core i7-1365U
+- 32GB LPDDR5 6400 MT/s
+Je reglerai le problème avec la VM pour le prochain labo.
 
-Soit mon ordi est moins puissant qu'une des VMs (ce qui serait surprenant selon ses specs), soit il y avait un problème de conflit de ressources, mais à noter qu'il y a un surprenant haut taux d'échec dans les requests.
 
 > 💡 Question 1 : Combien d'utilisateurs faut-il pour que le Store Manager commence à échouer dans votre environnement de test ? Pour répondre à cette question, comparez la ligne Failures et la ligne Users dans les graphiques.
 

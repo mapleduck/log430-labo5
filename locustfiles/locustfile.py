@@ -29,3 +29,5 @@ class FlaskAPIUser(HttpUser):
         
         if response.status_code == 503:  # HTTP 503 Service Unavailable
             print("Rate limit atteint!")
+
+    
