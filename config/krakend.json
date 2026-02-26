@@ -27,6 +27,32 @@
           "timeout": "5s"
         }
       ]
+    },
+    {
+      "endpoint": "/store-manager-api/orders",
+      "method": "POST",
+      "backend": [
+        {
+          "url_pattern": "/orders",
+          "host": ["http://store_manager:5000"]
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 200,
+          "every": "1m"
+        }
+      }
+    },
+    {
+      "endpoint": "/store-manager-api/orders",
+      "method": "PUT",
+      "backend": [
+        {
+          "url_pattern": "/orders",
+          "host": ["http://store_manager:5000"]
+        }
+      ]
     }
   ]
 }
