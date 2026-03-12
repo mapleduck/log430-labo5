@@ -4,9 +4,8 @@ SPDX - License - Identifier: LGPL - 3.0 - or -later
 Auteurs : Gabriel C. Ullmann, Fabio Petrillo, 2025
 """
 import json
-from logger import Logger
 import requests
-from flask import request
+from logger import Logger
 from orders.models.order import Order
 from stocks.models.product import Product
 from sqlalchemy.exc import SQLAlchemyError
@@ -53,7 +52,8 @@ def add_order(user_id: int, items: list):
 
         order_id = new_order.id
 
-        new_order.payment_link = request_payment_link(new_order.id, total_amount, user_id)
+        # Il faut mettre à jour le lien de paiement si la création du paiement (CREATING_PAYMENT) a réussi
+        new_order.payment_link = ""
         session.flush()  
         
         for item in order_items:
@@ -65,14 +65,15 @@ def add_order(user_id: int, items: list):
             )
             session.add(order_item)
 
-        # Update stock
-        check_out_items_from_stock(session, order_items)
+        # NOTE: Le code permettant de mettre à jour le stock est commenté à dessein. 
+        # Dans Saga, nous effectuerons les mises à jour des stocks dans une étape distincte.
+        #check_out_items_from_stock(session, order_items)
+        #update_stock_redis(order_items, '-')
 
         session.commit()
         logger.debug("Une commande a été ajouté")
 
-        # Insert order into Redis
-        update_stock_redis(order_items, '-')
+        # Il faut mettre à jour le lien de paiement si la création du paiement (CREATING_PAYMENT) a réussi
         add_order_to_redis(order_id, user_id, total_amount, items, new_order.payment_link)
         return order_id
 
@@ -82,7 +83,7 @@ def add_order(user_id: int, items: list):
     finally:
         session.close()
 
-def modify_order(order_id: int, is_paid: bool):
+def modify_order(order_id: int, is_paid: bool, payment_id: int):
     session = get_sqlalchemy_session()
     try:
         order = session.query(Order).filter(Order.id == order_id).first()
@@ -90,44 +91,26 @@ def modify_order(order_id: int, is_paid: bool):
         if order is not None and is_paid is not None:
             order.is_paid = is_paid
 
+        if order is not None and is_paid is not None:
+            order.payment_link = f"http://api-gateway:8080/payments-api/payments/process/{payment_id}"
+
         session.commit()
         session.refresh(order)
         return True
     except SQLAlchemyError as e:
         session.rollback()
-        print(e)
+        logger.debug(e)
         return False
     except Exception as e:
         session.rollback()
-        print(e)
+        logger.debug(e)
         return False
     finally:
         session.close()
 
 def request_payment_link(order_id, total_amount, user_id):
-    payment_id = 0
-    payment_transaction = {
-        "user_id": user_id,
-        "order_id": order_id,
-        "total_amount": total_amount
-    }
-
-
-    logger.debug("Appel Post Kraken")
-    # Appel post a kraken
-    response_from_payment_service = requests.post(
-        'http://api-gateway:8080/payments-api/payments',
-        json=payment_transaction,
-        headers={'Content-Type': 'application/json'}
-    )
-
-    if response_from_payment_service.ok:
-        #extract payment id
-        data = response_from_payment_service.json()
-        payment_id = data.get('payment_id', 0)
-        print(f"ID paiement: {payment_id}")
-
-    return f"http://api-gateway:8080/payments-api/payments/process/{payment_id}" 
+    # NOTE: Cette méthode ne sera pas utilisé pendant ce labo
+    return "" 
 
 def delete_order(order_id: int):
     """Delete order in MySQL, keep Redis in sync"""
@@ -139,12 +122,12 @@ def delete_order(order_id: int):
             # MySQL
             order_items = session.query(OrderItem).filter(OrderItem.order_id == order_id).all()
             session.delete(order)
-            check_in_items_to_stock(session, order_items)
+            #check_in_items_to_stock(session, order_items)
             session.commit()
 
             # Redis
-            update_stock_redis(order_items, '+')
-            delete_order_from_redis(order_id)
+            #update_stock_redis(order_items, '+')
+            #delete_order_from_redis(order_id)
             return 1  
         else:
             return 0  
