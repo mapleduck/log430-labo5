@@ -41,13 +41,21 @@ def delete_user(user_id: int):
     try:
         user = session.query(User).filter(User.id == user_id).first()
         if user:
+            name = user.name
+            email = user.email
             session.delete(user)
             session.commit()
-            # TODO: envoyer un evenement UserDeleted à Kafka
-            return 1  
+            user_event_producer = UserEventProducer()
+            user_event_producer.get_instance().send('user-events', value={
+                'event': 'UserDeleted',
+                'id': user_id,
+                'name': name,
+                'email': email,
+                'datetime': str(datetime.datetime.now())
+            })
+            return 1
         else:
-            return 0  
-            
+            return 0
     except Exception as e:
         session.rollback()
         raise e
