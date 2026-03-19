@@ -24,6 +24,7 @@ def add_user(name: str, email: str, user_type_id: int = 1):
             'id': new_user.id,
             'name': new_user.name,
             'email': new_user.email,
+            'user_type_id': new_user.user_type_id, 
             'datetime': str(datetime.datetime.now())
         })
         return new_user.id
@@ -41,6 +42,8 @@ def delete_user(user_id: int):
         if user:
             name = user.name
             email = user.email
+            user_type_id = user.user_type_id 
+
             session.delete(user)
             session.commit()
             user_event_producer = UserEventProducer()
@@ -49,6 +52,7 @@ def delete_user(user_id: int):
                 'id': user_id,
                 'name': name,
                 'email': email,
+                'user_type_id': user_type_id,  
                 'datetime': str(datetime.datetime.now())
             })
             return 1
